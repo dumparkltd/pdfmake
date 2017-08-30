@@ -140,6 +140,8 @@ LayoutBuilder.prototype.tryLayoutDocument = function (docStructure, fontProvider
 	});
 
 	this.addBackground(background);
+  // @tmfrnz: initialise footer mode
+  this.writer.footerMode = null;
 	this.processNode(docStructure);
 	this.addHeadersAndFooters(header, footer);
 	/* jshint eqnull:true */
@@ -179,7 +181,9 @@ LayoutBuilder.prototype.addDynamicRepeatable = function (nodeGetter, sizeFunctio
 	for (var pageIndex = 0, l = pages.length; pageIndex < l; pageIndex++) {
 		this.writer.context().page = pageIndex;
 
-		var node = nodeGetter(pageIndex + 1, l, this.writer.context().pages[pageIndex].pageSize);
+    // var node = nodeGetter(pageIndex + 1, l, this.writer.context().pages[pageIndex].pageSize);
+    // @tmfrnz: pass footer mode
+		var node = nodeGetter(pageIndex + 1, l, this.writer.context().pages[pageIndex].pageSize, this.writer.context().pages[pageIndex].footerMode);
 
 		if (node) {
 			var sizes = sizeFunction(this.writer.context().getCurrentPage().pageSize, this.pageMargins);
@@ -318,6 +322,10 @@ LayoutBuilder.prototype.processNode = function (node) {
 
 	this.linearNodeList.push(node);
 	decorateNode(node);
+
+  // @tmfrnz: set footer mode
+  this.writer.footerMode = node.footerMode || this.writer.footerMode;
+	this.writer.context().pages[this.writer.context().page].footerMode = this.writer.footerMode;
 
 	applyMargins(function () {
 		var unbreakable = node.unbreakable;
